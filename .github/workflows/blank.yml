@@ -7,13 +7,12 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-        with:
-          token: ${{ secrets.GIT_SECRET }}
-
       - name: Run a one-line script
         run: ./sync.sh
       - name: Commit updates
         run: |
-          git config --global user.name 'SyncBot'
-          git config --global user.email 'bot@optyx.io'
-          git commit -am "Auto updated detection content" && git push || echo "No changes to commit"
+          git config --global user.name 'GitHub Actions [Bot]'
+          git config --global user.email 'github-actions[bot]@users.noreply.github.com'
+          git remote set-url origin https://x-access-token:${{ secrets.GIT_SECRET }}@github.com/${{ github.repository }}
+          git commit -am "Auto updated submodule references" && git push || echo "No changes to commit"
+        
