@@ -1,0 +1,68 @@
+name: Linux Possible Append Cronjob Entry on Existing Cronjob File
+id: b5b91200-5f27-11ec-bb4e-acde48001122
+version: 1
+date: '2021-12-17'
+author: Teoderick Contreras, Splunk
+status: production
+type: Hunting
+description: The following analytic is designed to detect potential tampering with cronjob files on a Linux system. It specifically searches for command lines that may be used to append code to existing cronjob files, a technique often employed by adversaries, malware, and red teamers for persistence or privilege escalation. Altering existing or sometimes normal cronjob script files allows malicious code to be executed automatically.\
+
+  The analytic operates by monitoring logs for specific process names, parent processes, and command-line executions from your endpoints. It specifically checks for any 'echo' command which modifies files in directories commonly associated with cron jobs such as '/etc/cron*', '/var/spool/cron/', and '/etc/anacrontab'. If such activity is detected, an alert is triggered.\
+
+  This behavior is worth identifying for a SOC because malicious cron jobs can lead to system compromises and unauthorized data access, impacting business operations and data integrity.
+data_source:
+- Sysmon Event ID 1
+search: '| tstats `security_content_summariesonly` count from datamodel=Endpoint.Processes
+  where Processes.process = "*echo*" AND Processes.process IN("*/etc/cron*", "*/var/spool/cron/*",
+  "*/etc/anacrontab*") by Processes.dest Processes.user Processes.parent_process_name
+  Processes.process_name Processes.process Processes.process_id Processes.parent_process_id
+  Processes.process_guid | `drop_dm_object_name(Processes)` | `security_content_ctime(firstTime)`
+  | `security_content_ctime(lastTime)` | `linux_possible_append_cronjob_entry_on_existing_cronjob_file_filter`'
+how_to_implement: To successfully implement this search, you need to be ingesting
+  logs with the process name, parent process, and command-line executions from your
+  endpoints. If you are using Sysmon, you can use the Add-on for Linux Sysmon from
+  Splunkbase.
+known_false_positives: False positives may arise from legitimate actions by administrators or network operators who may use these commands for automation purposes. Therefore, it's recommended to adjust filter macros to eliminate such false positives.
+references:
+- https://attack.mitre.org/techniques/T1053/003/
+- https://blog.aquasec.com/threat-alert-kinsing-malware-container-vulnerability
+- https://www.intezer.com/blog/research/kaiji-new-chinese-linux-malware-turning-to-golang/
+tags:
+  analytic_story:
+  - Linux Privilege Escalation
+  - Linux Persistence Techniques
+  - Linux Living Off The Land
+  - Scheduled Tasks
+  asset_type: Endpoint
+  confidence: 70
+  impact: 70
+  message: A commandline $process$ that may modify cronjob file in $dest$
+  mitre_attack_id:
+  - T1053.003
+  - T1053
+  observable:
+  - name: dest
+    type: Hostname
+    role:
+    - Victim
+  product:
+  - Splunk Enterprise
+  - Splunk Enterprise Security
+  - Splunk Cloud
+  required_fields:
+  - _time
+  - Processes.dest
+  - Processes.user
+  - Processes.parent_process_name
+  - Processes.process_name
+  - Processes.process
+  - Processes.process_id
+  - Processes.parent_process_id
+  risk_score: 49
+  security_domain: endpoint
+tests:
+- name: True Positive Test
+  attack_data:
+  - data: https://media.githubusercontent.com/media/splunk/attack_data/master/datasets/attack_techniques/T1053.003/cronjobs_entry/sysmon_linux.log
+    source: Syslog:Linux-Sysmon/Operational
+    sourcetype: sysmon_linux

@@ -1,0 +1,70 @@
+name: Time Provider Persistence Registry
+id: 5ba382c4-2105-11ec-8d8f-acde48001122
+version: 4
+date: '2023-04-27'
+author: Steven Dick, Teoderick Contreras, Splunk
+status: production
+type: TTP
+description: This analytic is to detect a suspicious modification of time provider
+  registry for persistence and autostart. This technique can allow the attacker to
+  persist on the compromised host and autostart as soon as the machine boot up. This
+  TTP can be a good indicator of suspicious behavior since this registry is not commonly
+  modified by normal user or even an admin.
+data_source:
+- Sysmon Event ID 1
+search: '| tstats `security_content_summariesonly` count FROM datamodel=Endpoint.Registry
+  WHERE (Registry.registry_path="*\\CurrentControlSet\\Services\\W32Time\\TimeProviders*")
+  BY _time span=1h Registry.registry_path Registry.registry_key_name Registry.registry_value_name
+  Registry.registry_value_data Registry.process_guid | `drop_dm_object_name(Registry)` | `security_content_ctime(firstTime)`
+  | `security_content_ctime(lastTime)` | `time_provider_persistence_registry_filter`'
+how_to_implement: To successfully implement this search, you need to be ingesting
+  logs with the registry value name, registry path, and registry value data from your
+  endpoints. If you are using Sysmon, you must have at least version 2.0 of the offical
+  Sysmon TA. https://splunkbase.splunk.com/app/5709
+known_false_positives: unknown
+references:
+- https://pentestlab.blog/2019/10/22/persistence-time-providers/
+- https://attack.mitre.org/techniques/T1547/003/
+tags:
+  analytic_story:
+  - Hermetic Wiper
+  - Windows Privilege Escalation
+  - Windows Persistence Techniques
+  - Windows Registry Abuse
+  - Data Destruction
+  asset_type: Endpoint
+  confidence: 100
+  impact: 80
+  message: modified/added/deleted registry entry $Registry.registry_path$ in $dest$
+  mitre_attack_id:
+  - T1547.003
+  - T1547
+  observable:
+  - name: dest
+    type: Hostname
+    role:
+    - Victim
+  - name: user
+    type: User
+    role:
+    - Victim
+  product:
+  - Splunk Enterprise
+  - Splunk Enterprise Security
+  - Splunk Cloud
+  required_fields:
+  - _time
+  - Registry.dest
+  - Registry.registry_value_name
+  - Registry.registry_key_name
+  - Registry.registry_path
+  - Registry.registry_value_data
+  - Registry.process_guid
+  risk_score: 80
+  security_domain: endpoint
+tests:
+- name: True Positive Test
+  attack_data:
+  - data: https://media.githubusercontent.com/media/splunk/attack_data/master/datasets/attack_techniques/T1547.003/timeprovider_reg/sysmon.log
+    source: XmlWinEventLog:Microsoft-Windows-Sysmon/Operational
+    sourcetype: xmlwineventlog

@@ -1,0 +1,63 @@
+[metadata]
+creation_date = "2020/08/17"
+integration = ["endpoint", "windows"]
+maturity = "production"
+min_stack_comments = "New fields added: required_fields, related_integrations, setup"
+min_stack_version = "8.3.0"
+updated_date = "2023/06/22"
+
+[rule]
+author = ["Elastic"]
+description = """
+Detects the successful hijack of Microsoft Compatibility Appraiser scheduled task to establish persistence with an
+integrity level of system.
+"""
+from = "now-9m"
+index = ["winlogbeat-*", "logs-endpoint.events.*", "logs-windows.*", "endgame-*"]
+language = "eql"
+license = "Elastic License v2"
+name = "Persistence via TelemetryController Scheduled Task Hijack"
+note = """## Setup
+
+If enabling an EQL rule on a non-elastic-agent index (such as beats) for versions <8.2, events will not define `event.ingested` and default fallback for EQL rules was not added until 8.2, so you will need to add a custom pipeline to populate `event.ingested` to @timestamp for this rule to work.
+"""
+references = [
+    "https://www.trustedsec.com/blog/abusing-windows-telemetry-for-persistence",
+]
+risk_score = 73
+rule_id = "68921d85-d0dc-48b3-865f-43291ca2c4f2"
+severity = "high"
+tags = ["Domain: Endpoint", "OS: Windows", "Use Case: Threat Detection", "Tactic: Persistence", "Data Source: Elastic Endgame"]
+timestamp_override = "event.ingested"
+type = "eql"
+
+query = '''
+process where host.os.type == "windows" and event.type == "start" and
+  process.parent.name : "CompatTelRunner.exe" and process.args : "-cv*" and
+  not process.name : ("conhost.exe",
+                      "DeviceCensus.exe",
+                      "CompatTelRunner.exe",
+                      "DismHost.exe",
+                      "rundll32.exe",
+                      "powershell.exe")
+'''
+
+
+[[rule.threat]]
+framework = "MITRE ATT&CK"
+[[rule.threat.technique]]
+id = "T1053"
+name = "Scheduled Task/Job"
+reference = "https://attack.mitre.org/techniques/T1053/"
+[[rule.threat.technique.subtechnique]]
+id = "T1053.005"
+name = "Scheduled Task"
+reference = "https://attack.mitre.org/techniques/T1053/005/"
+
+
+
+[rule.threat.tactic]
+id = "TA0003"
+name = "Persistence"
+reference = "https://attack.mitre.org/tactics/TA0003/"
+

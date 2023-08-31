@@ -1,0 +1,88 @@
+[metadata]
+creation_date = "2020/11/27"
+integration = ["endpoint", "windows"]
+maturity = "production"
+min_stack_comments = "New fields added: required_fields, related_integrations, setup"
+min_stack_version = "8.3.0"
+updated_date = "2023/06/22"
+
+[rule]
+author = ["Elastic"]
+description = """
+Identifies use of the built-in Windows script interpreters (cscript.exe or wscript.exe) being used to execute a process
+via Windows Management Instrumentation (WMI). This may be indicative of malicious activity.
+"""
+from = "now-9m"
+index = ["winlogbeat-*", "logs-endpoint.events.*", "logs-windows.*", "endgame-*"]
+language = "eql"
+license = "Elastic License v2"
+name = "Windows Script Interpreter Executing Process via WMI"
+risk_score = 47
+rule_id = "b64b183e-1a76-422d-9179-7b389513e74d"
+severity = "medium"
+tags = ["Domain: Endpoint", "OS: Windows", "Use Case: Threat Detection", "Tactic: Initial Access", "Tactic: Execution", "Data Source: Elastic Endgame"]
+type = "eql"
+
+query = '''
+sequence by host.id with maxspan = 5s
+    [any where host.os.type == "windows" and 
+     (event.category : ("library", "driver") or (event.category == "process" and event.action : "Image loaded*")) and
+     (dll.name : "wmiutils.dll" or file.name : "wmiutils.dll") and process.name : ("wscript.exe", "cscript.exe")]
+    [process where host.os.type == "windows" and event.type == "start" and
+     process.parent.name : "wmiprvse.exe" and
+     user.domain != "NT AUTHORITY" and
+     (process.pe.original_file_name :
+        (
+          "cscript.exe",
+          "wscript.exe",
+          "PowerShell.EXE",
+          "Cmd.Exe",
+          "MSHTA.EXE",
+          "RUNDLL32.EXE",
+          "REGSVR32.EXE",
+          "MSBuild.exe",
+          "InstallUtil.exe",
+          "RegAsm.exe",
+          "RegSvcs.exe",
+          "msxsl.exe",
+          "CONTROL.EXE",
+          "EXPLORER.EXE",
+          "Microsoft.Workflow.Compiler.exe",
+          "msiexec.exe"
+        ) or
+      process.executable : ("C:\\Users\\*.exe", "C:\\ProgramData\\*.exe")
+     )
+    ]
+'''
+
+
+[[rule.threat]]
+framework = "MITRE ATT&CK"
+[[rule.threat.technique]]
+id = "T1566"
+name = "Phishing"
+reference = "https://attack.mitre.org/techniques/T1566/"
+[[rule.threat.technique.subtechnique]]
+id = "T1566.001"
+name = "Spearphishing Attachment"
+reference = "https://attack.mitre.org/techniques/T1566/001/"
+
+
+
+[rule.threat.tactic]
+id = "TA0001"
+name = "Initial Access"
+reference = "https://attack.mitre.org/tactics/TA0001/"
+[[rule.threat]]
+framework = "MITRE ATT&CK"
+[[rule.threat.technique]]
+id = "T1047"
+name = "Windows Management Instrumentation"
+reference = "https://attack.mitre.org/techniques/T1047/"
+
+
+[rule.threat.tactic]
+id = "TA0002"
+name = "Execution"
+reference = "https://attack.mitre.org/tactics/TA0002/"
+

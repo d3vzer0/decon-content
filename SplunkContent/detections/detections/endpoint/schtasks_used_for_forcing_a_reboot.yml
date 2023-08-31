@@ -1,0 +1,64 @@
+name: Schtasks used for forcing a reboot
+id: 1297fb80-f42a-4b4a-9c8a-88c066437cf6
+version: 4
+date: '2020-12-07'
+author: Bhavin Patel, Splunk
+status: production
+type: TTP
+description: The following analytic utilizes a Splunk query to pinpoint potential threats by monitoring the 'schtasks.exe' command-line usage. This particular command, especially when used in tandem with 'shutdown' and '/create' flags, can suggest an adversarial force intending to schedule unwarranted system reboots. The query focuses on endpoint process data and retrieves details such as the process name, the parent process name, the destination, and the user involved. Essential to the investigation are the earliest and latest timestamps of these events, providing an activity timeline. Data such as the targeted host and initiating user offer valuable context for analyst. 
+data_source:
+- Sysmon Event ID 1
+search: '| tstats `security_content_summariesonly` values(Processes.process) as process
+  min(_time) as firstTime max(_time) as lastTime from datamodel=Endpoint.Processes
+  where Processes.process_name=schtasks.exe Processes.process="*shutdown*" Processes.process="*/create
+  *" by Processes.process_name Processes.parent_process_name Processes.dest Processes.user
+  | `drop_dm_object_name(Processes)` | `security_content_ctime(firstTime)` | `security_content_ctime(lastTime)`
+  | `schtasks_used_for_forcing_a_reboot_filter`'
+how_to_implement: To successfully implement this search you need to be ingesting information
+  on process that include the name of the process responsible for the changes from
+  your endpoints into the `Endpoint` datamodel in the `Processes` node. In addition,
+  confirm the latest CIM App 4.20 or higher is installed and the latest TA for the
+  endpoint product.
+known_false_positives: This analytic may also capture legitimate administrative activities such as system updates or maintenance tasks, which can be classified as false positives. Filter as needed.
+references: []
+tags:
+  analytic_story:
+  - Windows Persistence Techniques
+  - Ransomware
+  - Scheduled Tasks
+  asset_type: Endpoint
+  confidence: 80
+  impact: 70
+  message: A schedule task process $process_name$ with force reboot commandline $process$
+    in host $dest$
+  mitre_attack_id:
+  - T1053.005
+  - T1053
+  observable:
+  - name: dest
+    type: Hostname
+    role:
+    - Victim
+  - name: user
+    type: User
+    role:
+    - Victim
+  product:
+  - Splunk Enterprise
+  - Splunk Enterprise Security
+  - Splunk Cloud
+  required_fields:
+  - _time
+  - Processes.process
+  - Processes.process_name
+  - Processes.parent_process_name
+  - Processes.dest
+  - Processes.user
+  risk_score: 56
+  security_domain: endpoint
+tests:
+- name: True Positive Test
+  attack_data:
+  - data: https://media.githubusercontent.com/media/splunk/attack_data/master/datasets/attack_techniques/T1053.005/schtask_shutdown/windows-sysmon.log
+    source: XmlWinEventLog:Microsoft-Windows-Sysmon/Operational
+    sourcetype: xmlwineventlog
