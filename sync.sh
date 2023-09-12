@@ -34,11 +34,11 @@ sentinel() {
     mkdir $TARGET_PATH/solutions && mkdir -p $TARGET_PATH/original/detections && mkdir $TARGET_PATH/original/hunting
 
     find $TMP_PATH/Solutions -name "Hunting Queries" -type d -exec echo "{}" \; | rev |cut -d'/' -f2| rev| xargs -I '{}' mkdir -p "$TARGET_PATH/solutions/{}/Hunting Queries"
-    find $TMP_PATH/Solutions -name "Hunting Queries" -type d -exec echo "{}" \; | rev |cut -d'/' -f2| rev| xargs -I '{}' cp -r "$TMP_PATH/Solutions/{}/Hunting Queries/" "$TARGET_PATH/solutions/{}/Hunting Queries/"
+    find $TMP_PATH/Solutions -name "Hunting Queries" -type d -exec echo "{}" \; | rev |cut -d'/' -f2| rev| xargs -I '{}' cp -r "$TMP_PATH/Solutions/{}/Hunting Queries" "$TARGET_PATH/solutions/{}/"
     cp -r "$TMP_PATH/Hunting Queries/"* $TARGET_PATH/original/hunting
 
     find $TMP_PATH/Solutions -name "Analytic Rules" -type d -exec echo "{}" \; | rev |cut -d'/' -f2| rev| xargs -I '{}' mkdir -p "$TARGET_PATH/solutions/{}/Analytic Rules"
-    find $TMP_PATH/Solutions -name "Analytic Rules" -type d -exec echo "{}" \; | rev |cut -d'/' -f2| rev| xargs -I '{}' cp -r "$TMP_PATH/Solutions/{}/Analytic Rules/" "$TARGET_PATH/solutions/{}/Analytic Rules/"
+    find $TMP_PATH/Solutions -name "Analytic Rules" -type d -exec echo "{}" \; | rev |cut -d'/' -f2| rev| xargs -I '{}' cp -r "$TMP_PATH/Solutions/{}/Analytic Rules" "$TARGET_PATH/solutions/{}/"
     cp -r "$TMP_PATH/Detections/"* $TARGET_PATH/original/detections
     grep -l --null "As part of content migration" -r $TARGET_PATH |xargs -0 rm
 }
