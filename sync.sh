@@ -30,13 +30,16 @@ sentinel() {
     TARGET_PATH="./SentinelContent"
     git clone --depth=1 https://github.com/Azure/Azure-Sentinel.git $TMP_PATH
 
-    rm -rf "$TARGET_PATH/hunting/original/"* && rm -rf "$TARGET_PATH/hunting/solutions/"*
-    find $TMP_PATH/Solutions -name "Hunting Queries" -type d -exec cp -r "{}" ./SentinelContent/hunting/solutions \;
-    cp -r "$TMP_PATH/Hunting Queries/"* $TARGET_PATH/hunting/original
+    rm -rf $TARGET_PATH/solutions && rm -rf $TARGET_PATH/original
+    mkdir $TARGET_PATH/solutions && mkdir -p $TARGET_PATH/original/detections && mkdir $TARGET_PATH/original/hunting
 
-    rm -rf "$TARGET_PATH/detections/original/"* && rm -rf "$TARGET_PATH/detections/solutions/"*
-    find $TMP_PATH/Solutions -name "Analytic Rules" -type d -exec cp -r "{}" SentinelContent/detections/solutions \;
-    cp -r "$TMP_PATH/Detections/"* $TARGET_PATH/detections/original
+    find $TMP_PATH/Solutions -name "Hunting Queries" -type d -exec echo "{}" \; | rev |cut -d'/' -f2| rev| xargs -I '{}' mkdir -p "$TARGET_PATH/solutions/{}/Hunting Queries"
+    find $TMP_PATH/Solutions -name "Hunting Queries" -type d -exec echo "{}" \; | rev |cut -d'/' -f2| rev| xargs -I '{}' cp -r "$TMP_PATH/Solutions/{}/Hunting Queries/" "$TARGET_PATH/solutions/{}/Hunting Queries/"
+    cp -r "$TMP_PATH/Hunting Queries/"* $TARGET_PATH/original/hunting
+
+    find $TMP_PATH/Solutions -name "Analytic Rules" -type d -exec echo "{}" \; | rev |cut -d'/' -f2| rev| xargs -I '{}' mkdir -p "$TARGET_PATH/solutions/{}/Analytic Rules"
+    find $TMP_PATH/Solutions -name "Analytic Rules" -type d -exec echo "{}" \; | rev |cut -d'/' -f2| rev| xargs -I '{}' cp -r "$TMP_PATH/Solutions/{}/Analytic Rules/" "$TARGET_PATH/solutions/{}/Analytic Rules/"
+    cp -r "$TMP_PATH/Detections/"* $TARGET_PATH/original/detections
 }
 
 elastic
