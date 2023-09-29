@@ -43,7 +43,18 @@ sentinel() {
     grep -l --null "As part of content migration" -r $TARGET_PATH |xargs -0 rm
 }
 
+dates() {
+    echo "\"created\",\"modified\",\"file\"" > detectionlog.csv
+    git ls-tree -r --name-only HEAD | while read filename; do
+        commits=$(git log --follow --format="%ai" --date default "$filename")
+        created=$(echo "$commits"|tail -1)
+        modified=$(echo "$commits"|head -1)
+        echo "\"$created\",\"$modified\",\"$filename\"" >> detectionlog.csv
+    done
+}
+
 elastic
 splunk
 sigma
 sentinel
+dates
