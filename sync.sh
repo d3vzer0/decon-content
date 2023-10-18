@@ -57,4 +57,3 @@ elastic
 splunk
 sigma
 sentinel
-dates
