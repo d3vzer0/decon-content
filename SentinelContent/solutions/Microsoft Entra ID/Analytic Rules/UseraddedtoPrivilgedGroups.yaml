@@ -1,9 +1,9 @@
 id: 4d94d4a9-dc96-410a-8dea-4d4d4584188b
-name: User added to Azure Active Directory Privileged Groups
+name: User added to Microsoft Entra ID Privileged Groups
 description: |
   'This will alert when a user is added to any of the Privileged Groups.
   For further information on AuditLogs please see https://docs.microsoft.com/azure/active-directory/reports-monitoring/reference-audit-activities.
-  For Administrator role permissions in Azure Active Directory please see https://docs.microsoft.com/azure/active-directory/users-groups-roles/directory-assign-admin-roles'
+  For Administrator role permissions in Microsoft Entra ID please see https://docs.microsoft.com/azure/active-directory/users-groups-roles/directory-assign-admin-roles'
 severity: Medium
 requiredDataConnectors:
   - connectorId: AzureActiveDirectory
@@ -71,5 +71,5 @@ entityMappings:
         columnName: TargetName      
       - identifier: UPNSuffix
         columnName: TargetUPNSuffix
-version: 1.0.4
+version: 1.0.5
 kind: Scheduled

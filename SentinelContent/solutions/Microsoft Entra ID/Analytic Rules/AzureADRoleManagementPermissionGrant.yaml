@@ -1,9 +1,9 @@
 id: 1ff56009-db01-4615-8211-d4fda21da02d
-name: Azure AD Role Management Permission Grant
+name: Microsoft Entra ID Role Management Permission Grant
 description: |
   'Identifies when the Microsoft Graph RoleManagement.ReadWrite.Directory (Delegated or Application) permission is granted to a service principal.
   This permission allows an application to read and manage the role-based access control (RBAC) settings for your company's directory.
-  An adversary could use this permission to add an Azure AD object to an Admin directory role and escalate privileges.
+  An adversary could use this permission to add an Microsoft Entra ID object to an Admin directory role and escalate privileges.
   Ref : https://docs.microsoft.com/graph/permissions-reference#role-management-permissions
   Ref : https://docs.microsoft.com/graph/api/directoryrole-post-members?view=graph-rest-1.0&tabs=http'
 severity: High
@@ -64,5 +64,5 @@ entityMappings:
     fieldMappings:
       - identifier: Name
         columnName: AppDisplayName
-version: 1.0.4
+version: 1.0.5
 kind: Scheduled

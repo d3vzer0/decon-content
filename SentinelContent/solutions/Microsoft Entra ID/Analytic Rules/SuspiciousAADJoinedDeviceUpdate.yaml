@@ -1,7 +1,7 @@
 id: 3a3c6835-0086-40ca-b033-a93bf26d878f
-name: Suspicious AAD Joined Device Update
+name: Suspicious Entra ID Joined Device Update
 description: |
-  'This query looks for suspicious updates to an Azure AD joined device where the device name is changed and the device falls out of compliance.
+  'This query looks for suspicious updates to an Microsoft Entra ID joined device where the device name is changed and the device falls out of compliance.
   This could occur when a threat actor updates the details of an Autopilot provisioned device using a stolen device ticket, in order to access certificates and keys.
   Ref: https://dirkjanm.io/assets/raw/Insomnihack%20Breaking%20and%20fixing%20Azure%20AD%20device%20identity%20security.pdf'
 severity: Medium
@@ -73,9 +73,9 @@ entityMappings:
 alertDetailsOverride:
   alertDisplayNameFormat: Suspicious AAD Joined Device Update {{OldDeviceName}} renamed to {{NewDeviceName}} and {{UpdatedPropertiesCount}} properties changed
   alertDescriptionFormat: |
-    This query looks for suspicious updates to an Azure AD joined device where the device name is changed and the device falls out of compliance.
+    This query looks for suspicious updates to an Microsoft Entra ID joined device where the device name is changed and the device falls out of compliance.
     In this case {{OldDeviceName}} was renamed to {{NewDeviceName}} and {{UpdatedPropertiesCount}} properties were changed.
     This could occur when a threat actor steals a Device ticket from an Autopilot provisioned device and uses it to AAD Join a new  device.
     Ref: https://dirkjanm.io/assets/raw/Insomnihack%20Breaking%20and%20fixing%20Azure%20AD%20device%20identity%20security.pdf
-version: 1.0.1
+version: 1.0.2
 kind: Scheduled

@@ -1,7 +1,7 @@
 id: bfb1c90f-8006-4325-98be-c7fffbc254d6
-name: Distributed Password cracking attempts in AzureAD
+name: Distributed Password cracking attempts in Microsoft Entra ID
 description: |
-  'Identifies distributed password cracking attempts from the Azure Active Directory SigninLogs.
+  'Identifies distributed password cracking attempts from the Microsoft Entra ID SigninLogs.
   The query looks for unusually high number of failed password attempts coming from multiple locations for a user account.
   References: https://docs.microsoft.com/azure/active-directory/reports-monitoring/reference-sign-ins-error-codes
   50053   Account is locked because the user tried to sign in too many times with an incorrect user ID or password.
@@ -58,5 +58,5 @@ entityMappings:
     fieldMappings:
       - identifier: Address
         columnName: IPAddress
-version: 1.0.2
+version: 1.0.3
 kind: Scheduled

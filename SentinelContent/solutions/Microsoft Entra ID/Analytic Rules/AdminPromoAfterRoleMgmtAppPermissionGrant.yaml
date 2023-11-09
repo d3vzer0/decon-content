@@ -1,7 +1,7 @@
 id: f80d951a-eddc-4171-b9d0-d616bb83efdc
 name: Admin promotion after Role Management Application Permission Grant
 description: |
-  'This rule looks for a service principal being granted the Microsoft Graph RoleManagement.ReadWrite.Directory (application) permission before being used to add an Azure AD object or user account to an Admin directory role (i.e. Global Administrators).
+  'This rule looks for a service principal being granted the Microsoft Graph RoleManagement.ReadWrite.Directory (application) permission before being used to add an Microsoft Entra ID object or user account to an Admin directory role (i.e. Global Administrators).
   This is a known attack path that is usually abused when a service principal already has the AppRoleAssignment.ReadWrite.All permission granted. This permission allows an app to manage permission grants for application permissions to any API.
   A service principal can promote itself or other service principals to admin roles (i.e. Global Administrators). This would be considered a privilege escalation technique.
   Ref : https://docs.microsoft.com/graph/permissions-reference#role-management-permissions, https://docs.microsoft.com/graph/api/directoryrole-post-members?view=graph-rest-1.0&tabs=http'
@@ -92,5 +92,5 @@ entityMappings:
         columnName: TargetName
       - identifier: UPNSuffix
         columnName: TargetUPNSuffix
-version: 1.0.3
+version: 1.0.4
 kind: Scheduled
