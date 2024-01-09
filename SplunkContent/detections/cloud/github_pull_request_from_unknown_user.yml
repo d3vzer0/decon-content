@@ -1,0 +1,60 @@
+name: GitHub Pull Request from Unknown User
+id: 9d7b9100-8878-4404-914e-ca5e551a641e
+version: 1
+date: '2021-09-01'
+author: Patrick Bareiss, Splunk
+status: production
+type: Anomaly
+description: The following analytic detects pull requests from unknown users on GitHub. The detection is made by using a Splunk query to search for pull requests in the `check_suite.pull_requests` field where the `id` is not specified. Next, the analytic retrieves information such as the author's name, the repository's full name, the head reference of the pull request, and the commit message from the `check_suite.head_commit` field. The analytic also includes a step to exclude known users by using the `github_known_users` lookup table, which helps to filter out pull requests from known users and focus on the pull requests from unknown users. The detection is important because it locates potential malicious activity or unauthorized access since unknown users can introduce malicious code or gain unauthorized access to repositories leading to unauthorized code changes, data breaches, or other security incidents. Next steps include reviewing the author's name, the repository involved, the head reference of the pull request, and the commit message upon triage of a potential pull request from an unknown user. You must also analyze any relevant on-disk artifacts and investigate any concurrent processes to determine the source and intent of the pull request."
+data_source: []
+search: '`github` check_suite.pull_requests{}.id=* | stats count by check_suite.head_commit.author.name
+  repository.full_name check_suite.pull_requests{}.head.ref check_suite.head_commit.message
+  | rename check_suite.head_commit.author.name as user repository.full_name as repository
+  check_suite.pull_requests{}.head.ref as ref_head check_suite.head_commit.message
+  as commit_message | search NOT `github_known_users` | eval phase="code" | `security_content_ctime(firstTime)`
+  | `security_content_ctime(lastTime)` | `github_pull_request_from_unknown_user_filter`'
+how_to_implement: You must index GitHub logs. You can follow the url in reference
+  to onboard GitHub logs.
+known_false_positives: unknown
+references:
+- https://www.splunk.com/en_us/blog/tips-and-tricks/getting-github-data-with-webhooks.html
+tags:
+  analytic_story:
+  - Dev Sec Ops
+  asset_type: GitHub
+  confidence: 90
+  impact: 30
+  message: Vulnerabilities found in packages used by GitHub repository $repository$
+  mitre_attack_id:
+  - T1195.001
+  - T1195
+  observable:
+  - name: repository
+    type: Unknown
+    role:
+    - Victim
+  product:
+  - Splunk Enterprise
+  - Splunk Enterprise Security
+  - Splunk Cloud
+  required_fields:
+  - _time
+  - alert.id
+  - repository.full_name
+  - repository.html_url
+  - action
+  - alert.affected_package_name
+  - alert.affected_range
+  - alert.created_at
+  - alert.external_identifier
+  - alert.external_reference
+  - alert.fixed_in
+  - alert.severity
+  risk_score: 27
+  security_domain: network
+tests:
+- name: True Positive Test
+  attack_data:
+  - data: https://media.githubusercontent.com/media/splunk/attack_data/master/datasets/attack_techniques/T1195.001/github_pull_request/github_pull_request.json
+    sourcetype: aws:firehose:json
+    source: github

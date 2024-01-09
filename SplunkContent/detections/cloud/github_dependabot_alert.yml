@@ -1,0 +1,60 @@
+name: GitHub Dependabot Alert
+id: 05032b04-4469-4034-9df7-05f607d75cba
+version: 1
+date: '2021-09-01'
+author: Patrick Bareiss, Splunk
+status: production
+type: Anomaly
+description: "The following analytic is made by first searching for logs that contain the action \"create\" and renames certain fields for easier analysis. Then, this analytic uses the \"stats\" command to calculate the first and last occurrence of the alert based on the timestamp. The fields included in the output are the action, affected package name, affected range, created date, external identifier, external reference, fixed version, severity, repository, repository URL, and user. The \"phase\" field is set to \"code\" to indicate that the alert pertains to code-related issues. The detection is important because dependabot Alerts can indicate vulnerabilities in the codebase that can be exploited by attackers. Detecting and investigating these alerts can help a SOC to proactively address security risks and prevent potential breaches or unauthorized access to sensitive information. False positives might occur since there are legitimate actions that trigger the \"create\" action or if other factors exist that can generate similar log entries. Next steps include reviewing the details of the alert, such as the affected package, severity, and fixed version to determine the appropriate response and mitigation steps."
+data_source: []
+search: '`github` alert.id=* action=create | rename repository.full_name as repository,
+  repository.html_url as repository_url sender.login as user | stats min(_time) as
+  firstTime max(_time) as lastTime by action alert.affected_package_name alert.affected_range
+  alert.created_at alert.external_identifier alert.external_reference alert.fixed_in
+  alert.severity repository repository_url user | eval phase="code" | `security_content_ctime(firstTime)`
+  | `security_content_ctime(lastTime)` | `github_dependabot_alert_filter`'
+how_to_implement: You must index GitHub logs. You can follow the url in reference
+  to onboard GitHub logs.
+known_false_positives: unknown
+references:
+- https://www.splunk.com/en_us/blog/tips-and-tricks/getting-github-data-with-webhooks.html
+tags:
+  analytic_story:
+  - Dev Sec Ops
+  asset_type: GitHub
+  confidence: 90
+  impact: 30
+  message: Vulnerabilities found in packages used by GitHub repository $repository$
+  mitre_attack_id:
+  - T1195.001
+  - T1195
+  observable:
+  - name: repository
+    type: Unknown
+    role:
+    - Victim
+  product:
+  - Splunk Enterprise
+  - Splunk Enterprise Security
+  - Splunk Cloud
+  required_fields:
+  - _time
+  - alert.id
+  - repository.full_name
+  - repository.html_url
+  - action
+  - alert.affected_package_name
+  - alert.affected_range
+  - alert.created_at
+  - alert.external_identifier
+  - alert.external_reference
+  - alert.fixed_in
+  - alert.severity
+  risk_score: 27
+  security_domain: network
+tests:
+- name: True Positive Test
+  attack_data:
+  - data: https://media.githubusercontent.com/media/splunk/attack_data/master/datasets/attack_techniques/T1195.001/github_security_advisor_alert/github_security_advisor_alert.json
+    sourcetype: aws:firehose:json
+    source: github

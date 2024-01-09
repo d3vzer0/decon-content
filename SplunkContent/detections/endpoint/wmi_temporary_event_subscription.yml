@@ -1,0 +1,49 @@
+name: WMI Temporary Event Subscription
+id: 38cbd42c-1098-41bb-99cf-9d6d2b296d83
+version: 1
+date: '2018-10-23'
+author: Rico Valdez, Splunk
+status: experimental
+type: TTP
+description: "The following analytic detects the creation of WMI temporary event subscriptions. WMI (Windows Management Instrumentation) is a management technology that allows administrators to perform various tasks on Windows-based systems. Temporary event subscriptions are created to monitor specific events or changes on a system that help to detect potential threats early and take proactive measures to protect the organization's systems and data. The detection is made by using the Splunk query `wmi` EventCode=5860 Temporary to search for events with EventCode 5860, which indicates the creation of a temporary WMI event subscription. To further refine the search results, the query uses regular expressions (rex) to extract the query used in the event subscription. Then, it filters known benign queries related to system processes such as 'wsmprovhost.exe' and 'AntiVirusProduct', 'FirewallProduct', 'AntiSpywareProduct', which helps to focus on potentially malicious or suspicious queries. The detection is important because it indicates malicious activity since attackers use WMI to run commands, gather information, or maintain persistence within a compromised system. False positives might occur since legitimate uses of WMI event subscriptions in the environment might trigger benign activities to be flagged. Therefore, an extensive triage is necessary to review the specific query and assess its intent. Additionally, capturing and inspecting relevant on-disk artifacts and analyzing concurrent processes can help to identify the source of the attack. Detecting the creation of these event subscriptions to identify potential threats early and take appropriate actions to mitigate the risks."
+data_source:
+- Sysmon Event ID 5
+search: '`wmi` EventCode=5860 Temporary | rex field=Message "NotificationQuery =\s+(?<query>[^;|^$]+)"
+  | search query!="SELECT * FROM Win32_ProcessStartTrace WHERE ProcessName = ''wsmprovhost.exe''"
+  AND query!="SELECT * FROM __InstanceOperationEvent WHERE TargetInstance ISA ''AntiVirusProduct''
+  OR TargetInstance ISA ''FirewallProduct'' OR TargetInstance ISA ''AntiSpywareProduct''"
+  | stats count min(_time) as firstTime max(_time) as lastTime by ComputerName, query  |
+  `security_content_ctime(firstTime)`| `security_content_ctime(lastTime)` | `wmi_temporary_event_subscription_filter`'
+how_to_implement: To successfully implement this search, you must be ingesting the
+  Windows WMI activity logs. This can be done by adding a stanza to inputs.conf on
+  the system generating logs with a title of [WinEventLog://Microsoft-Windows-WMI-Activity/Operational].
+known_false_positives: Some software may create WMI temporary event subscriptions
+  for various purposes. The included search contains an exception for two of these
+  that occur by default on Windows 10 systems. You may need to modify the search to
+  create exceptions for other legitimate events.
+references: []
+tags:
+  analytic_story:
+  - Suspicious WMI Use
+  asset_type: Endpoint
+  confidence: 50
+  impact: 50
+  message: tbd
+  mitre_attack_id:
+  - T1047
+  observable:
+  - name: dest
+    type: Other
+    role:
+    - Other
+  product:
+  - Splunk Enterprise
+  - Splunk Enterprise Security
+  - Splunk Cloud
+  required_fields:
+  - _time
+  - EventCode
+  - Message
+  - query
+  risk_score: 25
+  security_domain: endpoint

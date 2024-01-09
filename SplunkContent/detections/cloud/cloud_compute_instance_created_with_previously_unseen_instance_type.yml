@@ -1,0 +1,65 @@
+name: Cloud Compute Instance Created With Previously Unseen Instance Type
+id: c6ddbf53-9715-49f3-bb4c-fb2e8a309cda
+version: 1
+date: '2020-09-12'
+author: David Dorsey, Splunk
+status: experimental
+type: Anomaly
+description: The following analytic detects the creation of EC2 instances with previously unseen instance types. The detection is made by using a Splunk query to identify the EC2 instances. First, the query searches for changes in the EC2 instance creation action and filters for instances with instance types that are not recognized or previously seen. Next, the query uses the Splunk tstats command to gather the necessary information from the Change data model. Then, it filters the instances with unknown instance types and reviews previously seen instance types to determine if they are new or not. The detection is important because it identifies attackers attempting to create instances with unknown or potentially compromised instance types, which can be an attempt to gain unauthorized access to sensitive data, compromise of systems, exfiltrate data, potential disruption of services, or launch other malicious activities within the environment. False positives might occur since there might be legitimate reasons for creating instances with previously unseen instance types. Therefore, you must carefully review and triage all alerts.
+data_source: []
+search: '| tstats earliest(_time) as firstTime, latest(_time) as lastTime values(All_Changes.object_id)
+  as dest, count from datamodel=Change where All_Changes.action=created by All_Changes.Instance_Changes.instance_type,
+  All_Changes.user | `drop_dm_object_name("All_Changes")` | `drop_dm_object_name("Instance_Changes")`
+  | where instance_type != "unknown" | lookup previously_seen_cloud_compute_instance_types
+  instance_type as instance_type OUTPUTNEW firstTimeSeen, enough_data | eventstats
+  max(enough_data) as enough_data | where enough_data=1 | eval firstTimeSeenInstanceType=min(firstTimeSeen)
+  | where isnull(firstTimeSeenInstanceType) OR firstTimeSeenInstanceType > relative_time(now(),
+  "-24h@h") | table firstTime, user, dest, count, instance_type | `security_content_ctime(firstTime)`
+  | `cloud_compute_instance_created_with_previously_unseen_instance_type_filter`'
+how_to_implement: You must be ingesting your cloud infrastructure logs from your cloud
+  provider. You should run the baseline search `Previously Seen Cloud Compute Instance
+  Types - Initial` to build the initial table of instance types observed and times.
+  You must also enable the second baseline search `Previously Seen Cloud Compute Instance
+  Types - Update` to keep this table up to date and to age out old data. You can also
+  provide additional filtering for this search by customizing the `cloud_compute_instance_created_with_previously_unseen_instance_type_filter`
+  macro.
+known_false_positives: It is possible that an admin will create a new system using
+  a new instance type that has never been used before. Verify with the creator that
+  they intended to create the system with the new instance type.
+references: []
+tags:
+  analytic_story:
+  - Cloud Cryptomining
+  asset_type: Cloud Compute Instance
+  confidence: 60
+  impact: 50
+  message: User $user$ is creating an instance $dest$ with an instance type $instance_type$
+    that has not been previously seen.
+  observable:
+  - name: user
+    type: User
+    role:
+    - Attacker
+  - name: dest
+    type: Endpoint
+    role:
+    - Victim
+  product:
+  - Splunk Enterprise
+  - Splunk Enterprise Security
+  - Splunk Cloud
+  required_fields:
+  - _time
+  - All_Changes.object_id
+  - All_Changes.action
+  - All_Changes.Instance_Changes.instance_type
+  - All_Changes.user
+  risk_score: 30
+  security_domain: threat
+tests:
+- name: True Positive Test
+  attack_data:
+  - data: https://media.githubusercontent.com/media/splunk/attack_data/master/datasets/suspicious_behaviour/abnormally_high_cloud_instances_launched/cloudtrail_behavioural_detections.json
+    sourcetype: aws:cloudtrail
+    source: aws_cloudtrail
+    update_timestamp: true
