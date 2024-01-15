@@ -80,7 +80,7 @@
         "DestinationPortName"
     ],
     "4": [
-        " Log Name",
+        "Log Name",
         "Source",
         "Date",
         "Event ID",
@@ -189,12 +189,11 @@
         "Computer",
         "Description",
         "RawAccessRead",
-        "UtcTime: Time event occurred",
+        "UtcTime",
         "ProcessGuid",
         "ProcessID",
         "Image",
-        "Device",
-        " "
+        "Device"
     ],
     "10": [
         "Log Name",
