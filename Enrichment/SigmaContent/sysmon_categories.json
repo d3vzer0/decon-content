@@ -1,22 +1,100 @@
 {
-    "process_creation": 1,
-    "file_change": 2,
-    "network_connection": 3,
-    "sysmon_status": 4,
-    "process_termination": 5,
-    "driver_load": 6,
-    "image_load": 7,
-    "create_remote_thread": 8,
-    "raw_access_read": 9,
-    "process_access": 10,
-    "file_event": 11,
-    "registry_add": 12,
-    "registry_set": 13,
-    "registry_rename": 14,
-    "create_stream_hash": 15,
-    "pipe_created": 17,
-    "wmi_event": 19,
-    "dns_query": 22,
-    "file_delete": 23,
-    "clipboard_capture": 24
+    "file_access": {
+        "source": "Microsoft-Windows-Kernel-File"
+    },
+    "file_rename": {
+        "source": "Microsoft-Windows-Kernel-File"
+    },
+    "process_creation": {
+        "source": "Sysmon",
+        "id": 1
+    },
+    "file_change": {
+        "source": "Sysmon",
+        "id": 2
+    },
+    "network_connection": {
+        "source": "Sysmon",
+        "id": 3
+    },
+    "sysmon_status": {
+        "source": "Sysmon",
+        "id": 4
+    },
+    "process_termination": {
+        "source": "Sysmon",
+        "id": 5
+    },
+    "driver_load": {
+        "source": "Sysmon",
+        "id": 6
+    },
+    "image_load": {
+        "source": "Sysmon", 
+        "id": 7
+    },
+    "create_remote_thread": {
+        "source": "Sysmon",
+        "id": 8
+    },
+    "raw_access_read": {
+        "source": "Sysmon",
+        "id": 9
+    },
+    "raw_access_thread": {
+        "source": "Sysmon",
+        "id": 9
+    },
+    "process_access": {
+        "source": "Sysmon",
+        "id": 10
+    },
+    "file_event": {
+        "source": "Sysmon",
+        "id": 11
+    },
+    "registry_add": {
+        "source": "Sysmon",
+        "id" :12
+    },
+    "registry_delete": {
+        "source": "Sysmon",
+        "id": 12
+    },
+    "registry_set": {
+        "source": "Sysmon",
+        "id": 13
+    },
+    "registry_rename": {
+        "source": "Sysmon",
+        "id": 14
+    },
+    "create_stream_hash": {
+        "source": "Sysmon",
+        "id": 15
+    },
+    "pipe_created": {
+        "source": "Sysmon",
+        "id": 17
+    },
+    "wmi_event": {
+        "source": "Sysmon", 
+        "id": 19
+    },
+    "dns_query": {
+        "source": "Sysmon",
+        "id": 22
+    },
+    "file_delete": {
+        "source": "Sysmon", 
+        "id": 23
+    },
+    "clipboard_capture": {
+        "source": "Sysmon",
+        "id": 24
+    },
+    "process_tampering": {
+        "source": "Sysmon",
+        "id": 25
+    }
 }
