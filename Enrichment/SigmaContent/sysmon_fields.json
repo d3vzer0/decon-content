@@ -93,7 +93,7 @@
     },
     {
         "event_id": 4,
-        "category": "",
+        "category": "sysmon_status",
         "fields": [
             " Log Name",
             "Source",
