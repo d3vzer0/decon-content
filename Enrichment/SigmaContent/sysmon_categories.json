@@ -1,9 +1,9 @@
 {
     "file_access": {
-        "source": "Microsoft-Windows-Kernel-File"
+        "source": "Kernel-File"
     },
     "file_rename": {
-        "source": "Microsoft-Windows-Kernel-File"
+        "source": "Kernel-File"
     },
     "process_creation": {
         "source": "Sysmon",
