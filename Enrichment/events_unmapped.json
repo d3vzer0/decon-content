@@ -1,0 +1,16 @@
+{
+    "unmapped": [
+        "raw_access_thread",
+        "registry_delete",
+        "registry_event",
+        "process_tampering",
+        "file_block",
+        "ps_module",
+        "ps_module",
+        "file_access",
+        "file_rename",
+        "ps_classic_start",
+        "ps_classic_provider_start",
+        "sysmon_error"
+    ]
+}

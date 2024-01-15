@@ -1,0 +1,22 @@
+{
+    "process_creation": 1,
+    "file_change": 2,
+    "network_connection": 3,
+    "sysmon_status": 4,
+    "process_termination": 5,
+    "driver_load": 6,
+    "image_load": 7,
+    "create_remote_thread": 8,
+    "raw_access_read": 9,
+    "process_access": 10,
+    "file_event": 11,
+    "registry_add": 12,
+    "registry_set": 13,
+    "registry_rename": 14,
+    "create_stream_hash": 15,
+    "pipe_created": 17,
+    "wmi_event": 19,
+    "dns_query": 22,
+    "file_delete": 23,
+    "clipboard_capture": 24
+}
