@@ -3,7 +3,7 @@ id: 79c7d0fc-60c7-41be-a616-ccda752efe89
 version: 3
 date: '2023-11-07'
 author: Michael Haag, Splunk
-status: production
+status: deprecated
 type: Hunting
 description: The following hunting analytic is an experimental query built against
   a accidental feature using the latest Sysmon TA 3.0 (https://splunkbase.splunk.com/app/5709/)
