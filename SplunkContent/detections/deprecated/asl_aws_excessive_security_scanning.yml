@@ -3,7 +3,7 @@ id: ff2bfdbc-65b7-4434-8f08-d55761d1d446
 version: 1
 date: '2023-06-01'
 author: Patrick Bareiss, Splunk
-status: experimental
+status: deprecated
 type: Anomaly
 description: This search looks for AWS CloudTrail events and analyse the amount of
   eventNames which starts with Describe by a single user. This indicates that this

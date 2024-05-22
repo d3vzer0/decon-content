@@ -3,7 +3,7 @@ id: ccb3e4af-23d6-407f-9842-a26212816c9e
 version: 1
 date: '2022-05-23'
 author: Patrick Bareiss, Splunk
-status: experimental
+status: deprecated
 type: Hunting
 description: This detection rule monitors for the creation of AWS Identity and Access Management (IAM) access keys. 
   An IAM access key consists of an access key ID and secret access key, which are used to sign programmatic requests to AWS services. 
@@ -84,3 +84,4 @@ tests:
     sourcetype: aws:asl
     source: aws_asl
     update_timestamp: true
+
