@@ -1,5 +1,5 @@
 [metadata]
-creation_date = "2023/02/22"
+creation_date = "2024/08/08"
 integration = ["endpoint"]
 maturity = "production"
 updated_date = "2024/08/08"
@@ -7,16 +7,17 @@ updated_date = "2024/08/08"
 [rule]
 author = ["Elastic"]
 description = """
-Adversaries may attempt to disable the iptables or firewall service in an attempt to affect how a host is allowed to
-receive or send network traffic.
+Detects the creation or modification of files related to the dynamic linker on Linux systems. The dynamic linker is a
+shared library that is used by the Linux kernel to load and execute programs. Attackers may attempt to hijack the
+execution flow of a program by modifying the dynamic linker configuration files.
 """
 from = "now-9m"
-index = ["logs-endpoint.events.*", "endgame-*"]
+index = ["logs-endpoint.events.*"]
 language = "eql"
 license = "Elastic License v2"
-name = "Attempt to Disable IPTables or Firewall"
-risk_score = 21
-rule_id = "83e9c2b3-24ef-4c1d-a8cd-5ebafb5dfa2f"
+name = "Dynamic Linker Creation or Modification"
+risk_score = 47
+rule_id = "640f79d1-571d-4f96-a9af-1194fc8cf763"
 setup = """## Setup
 
 This rule requires data coming in from Elastic Defend.
@@ -42,52 +43,74 @@ For more details on Elastic Agent configuration settings, refer to the [helper g
 - To complete the integration, select "Add Elastic Agent to your hosts" and continue to the next section to install the Elastic Agent on your hosts.
 For more details on Elastic Defend refer to the [helper guide](https://www.elastic.co/guide/en/security/current/install-endpoint.html).
 """
-severity = "low"
+severity = "medium"
 tags = [
     "Domain: Endpoint",
     "OS: Linux",
     "Use Case: Threat Detection",
     "Tactic: Defense Evasion",
+    "Tactic: Persistence",
     "Data Source: Elastic Defend",
-    "Data Source: Elastic Endgame",
 ]
 timestamp_override = "event.ingested"
 type = "eql"
-
 query = '''
-process where host.os.type == "linux" and event.type == "start" and event.action in ("exec", "exec_event") and
-  (
-   /* disable FW */
-   (
-     (process.name == "ufw" and process.args == "disable") or
-     (process.name == "iptables" and process.args in ("-F", "--flush", "-X", "--delete-chain") and process.args_count == 2) or
-     (process.name in ("iptables", "ip6tables") and process.parent.args == "force-stop")
-   ) or
-
-   /* stop FW service */
-   (
-     ((process.name == "service" and process.args == "stop") or
-       (process.name == "chkconfig" and process.args == "off") or
-       (process.name == "systemctl" and process.args in ("disable", "stop", "kill"))) and
-    process.args in ("firewalld", "ip6tables", "iptables", "firewalld.service", "ip6tables.service", "iptables.service")
-    )
-  )
+file where host.os.type == "linux" and event.action in ("creation", "rename") and
+file.path : ("/etc/ld.so.preload", "/etc/ld.so.conf.d/*", "/etc/ld.so.conf") and
+not (
+  process.executable in (
+    "/bin/dpkg", "/usr/bin/dpkg", "/bin/dockerd", "/usr/bin/dockerd", "/usr/sbin/dockerd", "/bin/microdnf",
+    "/usr/bin/microdnf", "/bin/rpm", "/usr/bin/rpm", "/bin/snapd", "/usr/bin/snapd", "/bin/yum", "/usr/bin/yum",
+    "/bin/dnf", "/usr/bin/dnf", "/bin/podman", "/usr/bin/podman", "/bin/dnf-automatic", "/usr/bin/dnf-automatic",
+    "/bin/pacman", "/usr/bin/pacman", "/usr/bin/dpkg-divert", "/bin/dpkg-divert", "/sbin/apk", "/usr/sbin/apk",
+    "/usr/local/sbin/apk", "/usr/bin/apt", "/usr/sbin/pacman", "/bin/podman", "/usr/bin/podman", "/usr/bin/puppet",
+    "/bin/puppet", "/opt/puppetlabs/puppet/bin/puppet", "/usr/bin/chef-client", "/bin/chef-client",
+    "/bin/autossl_check", "/usr/bin/autossl_check", "/proc/self/exe", "/dev/fd/*",  "/usr/bin/pamac-daemon",
+    "/bin/pamac-daemon", "/usr/lib/snapd/snapd", "/usr/local/bin/dockerd", "/usr/libexec/platform-python"
+  ) or
+  file.extension in ("swp", "swpx", "swx", "dpkg-remove") or
+  file.Ext.original.extension == "dpkg-new" or
+  process.executable : (
+    "/nix/store/*", "/var/lib/dpkg/*", "/snap/*", "/dev/fd/*", "/usr/lib/virtualbox/*"
+  ) or
+  process.executable == null or
+  (process.name == "sed" and file.name : "sed*") or
+  (process.name == "perl" and file.name : "e2scrub_all.tmp*") 
+)
 '''
 
 [[rule.threat]]
 framework = "MITRE ATT&CK"
 
 [[rule.threat.technique]]
-id = "T1562"
-name = "Impair Defenses"
-reference = "https://attack.mitre.org/techniques/T1562/"
+id = "T1574"
+name = "Hijack Execution Flow"
+reference = "https://attack.mitre.org/techniques/T1574/"
 
 [[rule.threat.technique.subtechnique]]
-id = "T1562.001"
-name = "Disable or Modify Tools"
-reference = "https://attack.mitre.org/techniques/T1562/001/"
+id = "T1574.006"
+name = "Dynamic Linker Hijacking"
+reference = "https://attack.mitre.org/techniques/T1574/006/"
 
 [rule.threat.tactic]
 id = "TA0005"
 name = "Defense Evasion"
 reference = "https://attack.mitre.org/tactics/TA0005/"
+
+[[rule.threat]]
+framework = "MITRE ATT&CK"
+
+[[rule.threat.technique]]
+id = "T1574"
+name = "Hijack Execution Flow"
+reference = "https://attack.mitre.org/techniques/T1574/"
+
+[[rule.threat.technique.subtechnique]]
+id = "T1574.006"
+name = "Dynamic Linker Hijacking"
+reference = "https://attack.mitre.org/techniques/T1574/006/"
+
+[rule.threat.tactic]
+id = "TA0003"
+name = "Persistence"
+reference = "https://attack.mitre.org/tactics/TA0003/"
